@@ -1,0 +1,87 @@
+Controller
+
+using Sitecore.Links;
+using Sitecore.Web.UI.WebControls;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using VaibhavTourAndTravels.Models;
+
+namespace VaibhavTourAndTravels.Controllers
+{
+    public class CarouselController : Controller
+    {
+        // GET: Carousel
+        public ActionResult Index()
+        {
+            var parentItem = Sitecore.Context.Database.GetItem("/sitecore/content/VaibhavToursAndTravelsPvtLtd/ToursAndTravelsHomePage/CarouselFolder");
+
+            var carouselItems = parentItem.Children.Select(child => new Carousel
+            {
+                CarouselImage = new HtmlString(FieldRenderer.Render(child, "CarouselImage")),
+                CarouselTitle = new HtmlString(FieldRenderer.Render(child, "CarouselTitle"))
+            }).ToList();
+
+            return View("~/Views/ToursAndTravels/Carousel/Index.cshtml", carouselItems);
+        }
+    }
+}
+
+Model
+using Sitecore.Data.Fields;
+using Sitecore.Mvc.Presentation;
+using System.Web;
+
+namespace VaibhavTourAndTravels.Models // Make sure this is your correct namespace
+{
+    public class Carousel
+    {
+        public HtmlString CarouselImage { get; set; }
+        public HtmlString CarouselTitle { get; set; }
+
+    }
+        
+    
+}
+
+View
+
+@model IEnumerable<VaibhavTourAndTravels.Models.Carousel>
+
+<div id="carouselExampleCaptions" class="carousel slide">
+    <div class="carousel-indicators">
+        @for (int i = 0; i < Model.Count(); i++)
+        {
+            <button type="button"
+                    data-bs-target="#carouselExampleCaptions"
+                    data-bs-slide-to="@i"
+                    class="@((i == 0) ? "active" : "")"
+                    aria-current="@((i == 0) ? "true" : "")"
+                    aria-label="Slide @(i + 1)">
+            </button>
+        }
+    </div>
+    <div class="carousel-inner">
+        @foreach (var item in Model.Select((value, index) => new { Value = value, Index = index }))
+        {
+            <div class="carousel-item @(item.Index == 0 ? "active" : "")">
+                <!-- Since CarouselImage is already an HtmlString, render it directly -->
+                @item.Value.CarouselImage
+                <div class="carousel-caption d-none d-md-block">
+                    <h5>@item.Value.CarouselTitle</h5>
+                </div>
+            </div>
+        }
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
